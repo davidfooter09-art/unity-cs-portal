@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity University | CS Gerji Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --u-gold: #FFD700;
+            --u-black: #050505;
+            --u-card: #111111;
+            --sidebar-w: 280px;
+            --premium-glow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { font-family: 'Inter', sans-serif; background: var(--u-black); color: white; overflow: hidden; height: 100vh; }
+
+        /* --- AUTHENTICATION LAYER --- */
+        #gatekeeper {
+            position: fixed; inset: 0; background: var(--u-black); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-box {
+            background: var(--u-card); width: 400px; padding: 50px; border-radius: 30px;
+            border: 2px solid var(--u-gold); text-align: center; box-shadow: var(--premium-glow);
+        }
+        .brand-img { width: 110px; margin-bottom: 25px; transition: 0.5s; }
+        .brand-img:hover { transform: scale(1.1); }
+        .std-input {
+            width: 100%; padding: 15px; background: #1a1a1a; border: 1px solid #333;
+            border-radius: 12px; color: white; margin-bottom: 15px; font-weight: 600;
+        }
+        .btn-main {
+            width: 100%; padding: 16px; background: var(--u-gold); color: black;
+            font-weight: 900; border-radius: 12px; border: none; cursor: pointer; text-transform: uppercase;
+        }
+
+        /* --- MAIN APP STRUCTURE --- */
+        .app-shell { display: flex; height: 100vh; opacity: 0; transition: 1s ease-in-out; }
+        .app-active { opacity: 1; }
+
+        .sidebar {
+            width: var(--sidebar-w); background: #000; border-right: 1px solid rgba(255, 215, 0, 0.1);
+            display: flex; flex-direction: column; padding: 30px 15px;
+        }
+        .nav-item {
+            padding: 15px 20px; display: flex; align-items: center; gap: 15px;
+            color: #777; text-decoration: none; border-radius: 14px; margin-bottom: 8px; transition: 0.3s;
+            font-weight: 600; cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active { background: #161616; color: var(--u-gold); border-left: 4px solid var(--u-gold); }
+
+        /* --- VIEWPORT --- */
+        .viewport { flex: 1; overflow-y: auto; background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.98)), url('campus-hero.jpg'); background-size: cover; background-attachment: fixed; }
+        
+        header {
+            height: 80px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,215,0,0.15);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .user-profile { display: flex; align-items: center; gap: 15px; background: #111; padding: 8px 15px; border-radius: 50px; border: 1px solid #222; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--u-gold); object-fit: cover; }
+
+        /* --- CONTENT GRID --- */
+        .container { padding: 40px; max-width: 1400px; margin: 0 auto; }
+        .section-header { margin-bottom: 40px; border-left: 5px solid var(--u-gold); padding-left: 20px; }
+        .section-header h2 { font-family: 'Montserrat'; font-size: 2rem; color: white; }
+
+        .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        
+        .course-card {
+            background: var(--u-card); border-radius: 24px; padding: 30px;
+            border: 1px solid #222; transition: 0.4s; position: relative; overflow: hidden;
+        }
+        .course-card:hover { transform: translateY(-10px); border-color: var(--u-gold); box-shadow: var(--premium-glow); }
+        .course-card::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('premium-bg.jpg'); opacity: 0.05; pointer-events: none;
+        }
+
+        .course-card h3 { color: var(--u-gold); font-family: 'Montserrat'; margin-bottom: 10px; font-size: 1.3rem; }
+        .course-card p { font-size: 0.85rem; color: #888; margin-bottom: 25px; line-height: 1.5; }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn-action { flex: 1; padding: 12px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; border: none; text-transform: uppercase; transition: 0.2s; }
+        .btn-pdf { background: #222; color: white; }
+        .btn-exam { background: var(--u-gold); color: black; }
+        .btn-action:hover { opacity: 0.8; }
+
+        /* --- EXAM MODAL --- */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none;
+            z-index: 20000; align-items: center; justify-content: center;
+        }
+        .modal-box { background: #0a0a0a; width: 600px; padding: 40px; border-radius: 30px; border: 1px solid var(--u-gold); text-align: center; }
+
+        @media (max-width: 1000px) {
+            .sidebar { width: 85px; padding: 25px 10px; } .nav-item span, .sidebar h2 { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gatekeeper">
+        <div class="login-box">
+            <img src="unity-logo.png" class="brand-img" alt="Unity Logo">
+            <h2 style="font-family: 'Montserrat'; margin-bottom: 10px;">UNITY CS PORTAL</h2>
+            <p style="color: #666; font-size: 13px; margin-bottom: 30px;">Gerji Campus Archive v3.0</p>
+            <input type="text" id="userName" class="std-input" placeholder="Your Full Name">
+            <input type="text" id="stdID" class="std-input" placeholder="Student ID (e.g., UG/001/22)">
+            <button class="btn-main" onclick="unlockPortal()">Enter Gerji Archive</button>
+        </div>
+    </div>
+
+    <div class="app-shell" id="mainApp">
+        <aside class="sidebar">
+            <img src="unity-logo.png" style="width: 70px; margin: 0 auto 40px;" alt="Logo">
+            
+            <div class="nav-item active" onclick="filter('all')"><i class="fa-solid fa-house"></i> <span>Dashboard</span></div>
+            
+            <p style="font-size: 10px; font-weight: 900; color: #444; margin: 25px 0 10px 20px; letter-spacing: 2px;">FOUNDATION</p>
+            <div class="nav-item" onclick="filter('fresh1')"><i class="fa-solid fa-book-open"></i> <span>Freshman Sem I</span></div>
+            <div class="nav-item" onclick="filter('fresh2')"><i class="fa-solid fa-code"></i> <span>Freshman Sem II</span></div>
+
+            <p style="font-size: 10px; font-weight: 900; color: #444; margin: 25px 0 10px 20px; letter-spacing: 2px;">SENIOR YEAR</p>
+            <div class="nav-item" onclick="filter('year4-1')"><i class="fa-solid fa-microchip"></i> <span>Year 4 Sem I</span></div>
+            <div class="nav-item" onclick="filter('year4-2')"><i class="fa-solid fa-shield-halved"></i> <span>Year 4 Sem II</span></div>
+        </aside>
+
+        <main class="viewport">
+            <header>
+                <div style="font-family: 'Fira Code'; font-size: 12px; color: #444;">UNITY_SECURE_NODE::ACTIVE</div>
+                <div class="user-profile">
+                    <span id="profileName" style="font-weight: 800; font-size: 12px; color: var(--u-gold);"></span>
+                    <img src="user-default.png" class="avatar" alt="Avatar">
+                </div>
+            </header>
+
+            <div class="container">
+                <div class="section-header">
+                    <p style="color: var(--u-gold); font-weight: 900; font-size: 11px; letter-spacing: 4px; margin-bottom: 5px;">UNITY UNIVERSITY GERJI</p>
+                    <h2 id="viewTitle">All Academic Modules</h2>
+                </div>
+                
+                <div class="course-grid" id="mainGrid">
+                    </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="examModal">
+        <div class="modal-box">
+            <i class="fa-solid fa-file-signature" style="font-size: 3rem; color: var(--u-gold); margin-bottom: 20px;"></i>
+            <h2 id="examName" style="margin-bottom: 10px;"></h2>
+            <p id="examDetails" style="color: #888; margin-bottom: 30px;"></p>
+            <div id="examInterface">
+                <button class="btn-main" onclick="alert('Starting interactive past paper simulation...')">Begin Mock Exam</button>
+            </div>
+            <button onclick="closeExam()" style="background: transparent; border: none; color: #444; margin-top: 20px; cursor: pointer;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        /* --- DATABASE: 4-YEAR CURRICULUM --- */
+        const DATA = [
+            // FRESHMAN SEMESTER 1
+            { cat: 'fresh1', code: 'MATH1011', title: 'Applied Mathematics I', desc: 'Calculus, limits, and foundation math for CS students.' },
+            { cat: 'fresh1', code: 'ENGL1011', title: 'Communication English I', desc: 'Advanced grammar and academic writing skills.' },
+            { cat: 'fresh1', code: 'ANTH1011', title: 'Social Anthropology', desc: 'Study of human societies and cultural diversity.' },
+            { cat: 'fresh1', code: 'GEOG1011', title: 'Geography of Ethiopia', desc: 'Regional geography and economic landscapes.' },
+            { cat: 'fresh1', code: 'INCL1011', title: 'Inclusiveness', desc: 'Social inclusion and diversity awareness.' },
+            { cat: 'fresh1', code: 'PHYS1011', title: 'Physical Fitness', desc: 'General health and wellness foundation.' },
+
+            // FRESHMAN SEMESTER 2
+            { cat: 'fresh2', code: 'MATH1012', title: 'Applied Mathematics II', desc: 'Integrals and multi-variable calculus.' },
+            { cat: 'fresh2', code: 'ENGL1012', title: 'Communication English II', desc: 'Professional reports and speech.' },
+            { cat: 'fresh2', code: 'LOGI1012', title: 'Critical Thinking', desc: 'Logic, reasoning, and philosophy.' },
+            { cat: 'fresh2', code: 'CS1011', title: 'Intro to Computer Science', desc: 'Architecture, history, and binary systems.' },
+            { cat: 'fresh2', code: 'PROG1011', title: 'Programming Fundamentals', desc: 'Logic, flowcharts, and C++ basics.' },
+            { cat: 'fresh2', code: 'PSYC1011', title: 'General Psychology', desc: 'Human behavior and cognitive processes.' },
+            { cat: 'fresh2', code: 'TECH1011', title: 'Intro to Emerging Tech', desc: 'AI, IoT, and Blockchain basics.' },
+
+            // YEAR 4 SEMESTER 1
+            { cat: 'year4-1', code: 'COSC-3054', title: 'Compiler Design', desc: 'Lexical analysis and syntax tree generation.' },
+            { cat: 'year4-1', code: 'COSC-4081', title: 'Network & System Admin', desc: 'Server setup, TCP/IP, and firewall config.' },
+            { cat: 'year4-1', code: 'COSC-4023', title: 'Mobile Application Dev', desc: 'Native and Cross-platform development.' },
+            { cat: 'year4-1', code: 'COSC-4021', title: 'Windows Programming', desc: 'C# .NET and desktop software architecture.' },
+            { cat: 'year4-1', code: 'COSC-4061', title: 'Artificial Intelligence', desc: 'Neural networks and machine learning logic.' },
+
+            // YEAR 4 SEMESTER 2
+            { cat: 'year4-2', code: 'COSC-4086', title: 'Wireless Communication', desc: 'RF, satellite, and mobile networking.' },
+            { cat: 'year4-2', code: 'COSC-4082', title: 'Computer System Security', desc: 'Encryption, hacking defense, and forensics.' },
+            { cat: 'year4-2', code: 'COSC-4041', title: 'Cloud Computing', desc: 'AWS, Azure, and virtualization strategies.' }
+        ];
+
+        /* --- PORTAL LOGIC --- */
+        function unlockPortal() {
+            const name = document.getElementById('userName').value;
+            const id = document.getElementById('stdID').value;
+            if(!name || !id) return alert("All fields are required for Gerji Archive access.");
+            
+            document.getElementById('profileName').innerText = name.toUpperCase();
+            document.getElementById('gatekeeper').style.display = 'none';
+            document.getElementById('mainApp').classList.add('app-active');
+            renderCards(DATA);
+        }
+
+        function filter(category) {
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            if(category === 'all') {
+                document.getElementById('viewTitle').innerText = "All Academic Modules";
+                renderCards(DATA);
+            } else {
+                const filtered = DATA.filter(x => x.cat === category);
+                document.getElementById('viewTitle').innerText = category.replace('-', ' ').toUpperCase();
+                renderCards(filtered);
+            }
+        }
+
+        function renderCards(list) {
+            const grid = document.getElementById('mainGrid');
+            grid.innerHTML = list.map(item => `
+                <div class="course-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <h3 onclick="openExam('${item.code}')">${item.title}</h3>
+                        <span style="font-family:'Fira Code'; font-size:10px; background:#222; padding:4px 8px; border-radius:5px;">${item.code}</span>
+                    </div>
+                    <p>${item.desc}</p>
+                    <div class="btn-group">
+                        <button class="btn-action btn-pdf" onclick="downloadPdf('${item.code}')">Download PDF</button>
+                        <button class="btn-action btn-exam" onclick="openExam('${item.code}')">Past Paper</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function downloadPdf(code) {
+            // This looks in your /pdfs folder on GitHub
+            window.open(`pdfs/${code}.pdf`, '_blank');
+        }
+
+        function openExam(code) {
+            const course = DATA.find(x => x.code === code);
+            document.getElementById('examName').innerText = course.title + " Past Paper";
+            document.getElementById('examDetails').innerText = `Course Code: ${course.code} | 2024/2025 Mock Test`;
+            document.getElementById('examModal').style.display = 'flex';
+        }
+
+        function closeExam() {
+            document.getElementById('examModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
